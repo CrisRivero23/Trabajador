@@ -9,11 +9,29 @@ class SidePanelManager {
     }
 
     async init() {
-        await this.loadSession();
-        await this.loadData();
-        this.setupEventListeners();
-        this.setupMessageListener();
-        this.setupStorageListener();
+        console.log('[MONITOR] Inicializando SidePanelManager...');
+        try {
+            await this.loadSession();
+            await this.loadData();
+            this.setupEventListeners();
+            this.setupMessageListener();
+            this.setupStorageListener();
+            this.startPollingFallback(); // Sistema de respaldo
+            console.log('[MONITOR] Inicialización completada.');
+        } catch (error) {
+            console.error('[MONITOR] Error crítico en inicialización:', error);
+        }
+    }
+
+    startPollingFallback() {
+        // Cada 2 segundos verificamos si hay nuevos datos en storage como fallback
+        this.pollingInterval = setInterval(() => {
+            const now = Date.now();
+            // Solo sincronizamos si no hemos recibido actualizaciones en los últimos 2.5s
+            if (!this.lastUpdateMessageTime || (now - this.lastUpdateMessageTime > 2500)) {
+                this.loadData();
+            }
+        }, 2000);
     }
 
     setupStorageListener() {
@@ -27,14 +45,17 @@ class SidePanelManager {
     }
 
     setupMessageListener() {
-        chrome.runtime.onMessage.addListener((message) => {
+        chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+            this.lastUpdateMessageTime = Date.now();
             if (message.action === 'analysis_update') {
                 this.handleLiveUpdate(message);
+                sendResponse({ status: 'ok', received: 'analysis_update' });
             } else if (message.action === 'newMultiplier') {
-                // Forzar recarga inmediata cuando llega un nuevo dato
                 console.log('[MONITOR] Nuevo dato recibido directamente');
                 this.loadData();
+                sendResponse({ status: 'ok', received: 'newMultiplier' });
             }
+            return true;
         });
     }
 
@@ -269,4 +290,18 @@ class SidePanelManager {
     }
 }
 
-new SidePanelManager();
+// Inicialización garantizada
+const initManager = () => {
+    if (!window.sidePanelManagerStarted) {
+        window.sidePanelManagerStarted = true;
+        window.sidePanelManager = new SidePanelManager();
+    }
+};
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initManager);
+} else {
+    initManager();
+}
+// Triple verificación
+setTimeout(initManager, 500);

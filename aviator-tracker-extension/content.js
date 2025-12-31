@@ -130,7 +130,13 @@ class SniperTrigger {
                 timestamp: Date.now(),
                 url: window.location.href
             }
-        }).catch(() => { });
+        }, (response) => {
+            if (chrome.runtime.lastError) {
+                console.warn('[SNIPER] Error enviando multiplier:', chrome.runtime.lastError.message);
+            } else {
+                console.log('[SNIPER] Multiplier confirmado por Background:', response);
+            }
+        });
 
         if (this.checkLockdown()) return;
 
@@ -274,7 +280,13 @@ class SniperTrigger {
             timestamp: Date.now(),
             ...extra,
             inputs: extra.val1 !== undefined ? extra : undefined
-        }).catch(() => { });
+        }, (response) => {
+            if (chrome.runtime.lastError) {
+                // Silencioso si el panel está cerrado
+            } else {
+                console.log('[SNIPER] Update sidepanel ok:', response);
+            }
+        });
     }
 
     setupEmergencyListener() {

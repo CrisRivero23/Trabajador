@@ -43,10 +43,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                 multipliers = multipliers.slice(-300);
             }
 
-            chrome.storage.local.set({ multipliers: multipliers });
+            chrome.storage.local.set({ multipliers: multipliers }, () => {
+                sendResponse({ status: 'saved', timestamp: Date.now() });
+            });
         });
 
         console.log('Nuevo multiplicador registrado:', entry);
+        return true; // Mantener canal abierto para sendResponse asíncrono
     }
-    return true;
+    return false;
 });

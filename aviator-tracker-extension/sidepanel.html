@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aviator Analysis Pro</title>
+    <link rel="stylesheet" href="popup.css">
+    <style>
+        body {
+            width: 100%;
+            height: 100vh;
+            margin: 0;
+            padding: 10px;
+            box-sizing: border-box;
+            font-size: 13px;
+            background: #0f172a;
+            color: #e2e8f0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        .side-section {
+            margin-bottom: 12px;
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 12px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Stats Grid */
+        .stats-header-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .stat-mini-card {
+            background: rgba(15, 23, 42, 0.5);
+            padding: 10px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            text-align: center;
+        }
+
+        .stat-mini-label {
+            font-size: 10px;
+            color: #64748b;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .stat-mini-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: #f8fafc;
+        }
+
+        /* Analysis Monitor */
+        .monitor-display {
+            background: #020617;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            border: 1px solid #1e293b;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .monitor-display::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #6366f1, transparent);
+            animation: scan 2s linear infinite;
+        }
+
+        @keyframes scan {
+            0% {
+                transform: translateX(-100%);
+            }
+
+            100% {
+                transform: translateX(100%);
+            }
+        }
+
+        .current-val {
+            font-size: 32px;
+            font-weight: 800;
+            color: #eff6ff;
+            text-shadow: 0 0 20px rgba(99, 102, 241, 0.5);
+            margin: 5px 0;
+        }
+
+        .system-status {
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 20px;
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 5px;
+        }
+
+        .latency-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #10b981;
+            box-shadow: 0 0 5px #10b981;
+        }
+
+        .latency-warning .latency-dot {
+            background: #fbbf24;
+            box-shadow: 0 0 5px #fbbf24;
+        }
+
+        .latency-critical .latency-dot {
+            background: #ef4444;
+            box-shadow: 0 0 5px #ef4444;
+        }
+
+        /* Countdown Timer */
+        #lockdownCountdown {
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            color: #f87171;
+            margin-left: 5px;
+        }
+
+        /* Visual Log (Semaforo) */
+        .visual-log {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 10px;
+        }
+
+        .log-chip {
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 700;
+            min-width: 35px;
+            text-align: center;
+        }
+
+        .chip-red {
+            background: #ef4444;
+            color: white;
+            animation: flash-red 1s infinite;
+        }
+
+        .chip-yellow {
+            background: #fbbf24;
+            color: #0f172a;
+        }
+
+        .chip-green {
+            background: #10b981;
+            color: white;
+            box-shadow: 0 0 5px #10b981;
+        }
+
+        @keyframes flash-red {
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        /* Safety Warning (Purple) */
+        .safety-warning {
+            border-color: #a855f7 !important;
+            background: rgba(168, 85, 247, 0.2) !important;
+        }
+
+        .risk-alert {
+            background: rgba(239, 68, 68, 0.15) !important;
+            border: 1px solid rgba(239, 68, 68, 0.3) !important;
+            animation: pulse-red 2s infinite;
+        }
+
+        @keyframes pulse-red {
+            0% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+            }
+
+            70% {
+                box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+            }
+        }
+
+        /* Pattern Detection */
+        .pattern-box {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .pattern-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 10px;
+            background: rgba(15, 23, 42, 0.3);
+            border-radius: 6px;
+            font-size: 11px;
+        }
+
+        .pattern-label {
+            color: #94a3b8;
+        }
+
+        .pattern-status {
+            font-weight: 600;
+        }
+
+        .status-ok {
+            color: #4ade80;
+        }
+
+        .status-wait {
+            color: #fbbf24;
+        }
+
+        .status-fail {
+            color: #f87171;
+        }
+
+        .status-idle {
+            color: #64748b;
+        }
+
+        /* Conditions Section */
+        .condition-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+
+        .condition-chip {
+            font-size: 10px;
+            padding: 4px 6px;
+            border-radius: 4px;
+            background: rgba(15, 23, 42, 0.4);
+            border-left: 3px solid #334155;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .condition-chip.active {
+            border-left-color: #4ade80;
+            background: rgba(74, 222, 128, 0.05);
+        }
+
+        /* Decision Engine */
+        .decision-card {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(168, 85, 247, 0.1));
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            padding: 12px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .decision-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #a5b4fc;
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        .decision-msg {
+            font-size: 11px;
+            color: #cbd5e1;
+            font-style: italic;
+        }
+
+        /* Decision Log */
+        .log-container {
+            max-height: 150px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            padding-right: 5px;
+        }
+
+        .log-container::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .log-container::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 10px;
+        }
+
+        .log-entry {
+            font-size: 10px;
+            padding: 5px 8px;
+            border-radius: 4px;
+            background: rgba(15, 23, 42, 0.3);
+            border-left: 2px solid #6366f1;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-5px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .log-time {
+            color: #64748b;
+            margin-right: 5px;
+        }
+
+        /* Buttons */
+        .btn-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .btn-action {
+            padding: 10px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            font-size: 11px;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .btn-secondary {
+            background: #334155;
+            color: #f8fafc;
+        }
+
+        .btn-danger {
+            background: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-primary {
+            background: #6366f1;
+            color: white;
+            width: 100%;
+            margin-top: 8px;
+        }
+
+        .btn-panic {
+            background: #ef4444;
+            color: white;
+            width: 100%;
+            margin-top: 8px;
+            font-size: 14px;
+            padding: 12px;
+            border: 2px solid #991b1b;
+            box-shadow: 0 4px 0 #991b1b;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-panic:active {
+            transform: translateY(3px);
+            box-shadow: 0 1px 0 #991b1b;
+        }
+
+        .btn-action:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        /* Animation */
+        .pulse-ring {
+            position: relative;
+        }
+
+        .pulse-ring::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            border-radius: 50%;
+            box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.7);
+            animation: pulse-ring 1.5s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+        }
+
+        @keyframes pulse-ring {
+            0% {
+                box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.7);
+            }
+        }
+
+        /* Strategies Section */
+        .strategy-select {
+            width: 100%;
+            padding: 8px;
+            margin: 10px 0;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            border-radius: 6px;
+            font-size: 12px;
+        }
+
+        .strategy-config {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 10px;
+        }
+
+        .strategy-param {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 8px 0;
+            font-size: 11px;
+        }
+
+        .strategy-param label {
+            flex: 1;
+        }
+
+        .strategy-param input[type="number"] {
+            width: 90px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            border-radius: 4px;
+            padding: 4px 8px;
+            text-align: center;
+            font-size: 12px;
+        }
+
+        .strategy-param input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+        }
+
+        .strategy-info {
+            font-size: 10px;
+            opacity: 0.7;
+            margin-bottom: 8px;
+            font-style: italic;
+        }
+
+        .btn-full {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 1. Header: Ping y Kill-Switch -->
+    <div class="side-section" style="padding: 8px 12px; margin-bottom: 8px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div id="statusIndicator" class="system-status">
+                <div class="latency-dot"></div>
+                <span>CONECTADO</span>
+                <span id="latencyMs" style="font-weight: normal; opacity: 0.8;">(0ms)</span>
+            </div>
+            <button id="killSwitchBtn" class="btn-action btn-danger"
+                style="margin: 0; padding: 4px 10px; font-size: 9px;">KILL-SWITCH</button>
+        </div>
+    </div>
+
+    <!-- 2. Risk Monitor: Densidad y Seguridad -->
+    <div class="side-section">
+        <h3>🛡️ Monitor de Riesgo</h3>
+        <div class="pattern-box">
+            <div class="pattern-item">
+                <span class="pattern-label">Densidad de Fallos (15r < 1.05)</span>
+                        <span id="riskDensity" class="pattern-status status-ok">0/15</span>
+            </div>
+            <div class="pattern-item" id="safetyStatusBox">
+                <span class="pattern-label">Estado de Seguridad</span>
+                <div>
+                    <span id="patSafe" class="pattern-status status-ok">SISTEMA SEGURO</span>
+                    <span id="lockdownCountdown"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Trigger Engine: Status Dashboard -->
+    <div class="side-section">
+        <h3>🎯 Status del Algoritmo</h3>
+        <div class="decision-card" id="decisionCard">
+            <span id="decisionTitle" class="decision-title">ESPERANDO OPORTUNIDAD</span>
+            <span id="decisionReason" class="decision-msg">Analizando flujo...</span>
+        </div>
+
+        <!-- Double-Check: Mirror de Inputs -->
+        <div style="margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+            <div class="stat-mini-card" style="padding: 5px;">
+                <span class="stat-mini-label">INPUT 1 (WEB)</span>
+                <span id="mirror1" class="stat-mini-value" style="font-size: 14px;">0.00</span>
+            </div>
+            <div class="stat-mini-card" style="padding: 5px;">
+                <span class="stat-mini-label">INPUT 2 (WEB)</span>
+                <span id="mirror2" class="stat-mini-value" style="font-size: 14px;">0.00</span>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-top: 10px;">
+            <div id="condInputs" class="condition-chip">Sincronizado</div>
+            <div id="condRisk" class="condition-chip">Sin Bloqueo</div>
+        </div>
+    </div>
+
+    <!-- 4. Log: Visual Log (Semaforo) y Stats -->
+    <div class="side-section">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+            <h3>📊 Visual Log (Últ. 20)</h3>
+            <span id="currentVal" style="font-weight: 800; color: #6366f1;">---x</span>
+        </div>
+        <div id="visualLogContainer" class="visual-log">
+            <!-- Chips dynamic content -->
+        </div>
+
+        <div class="stats-header-grid" style="margin: 15px 0 0 0;">
+            <div class="stat-mini-card">
+                <span class="stat-mini-label">GANANCIAS (ARS)</span>
+                <span id="profit" class="stat-mini-value">0.00</span>
+            </div>
+            <div class="stat-mini-card">
+                <span class="stat-mini-label">W/L SESIÓN</span>
+                <div style="display: flex; justify-content: center; gap: 5px;">
+                    <span id="wins" style="color: #4ade80; font-weight: bold;">0</span>
+                    <span id="losses" style="color: #f87171; font-weight: bold;">0</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Acciones Secundarias -->
+    <div class="btn-group" style="margin-top: 0;">
+        <button id="resetSessionBtn" class="btn-action btn-secondary" style="padding: 6px;">Reiniciar</button>
+        <button id="viewHistoryBtn" class="btn-action btn-secondary" style="padding: 6px;">Historial</button>
+    </div>
+    <button id="openSimulatorBtn" class="btn-action btn-primary" style="margin-top: 8px;">🛸 Abrir Simulador
+        Avanzado</button>
+
+    <script src="sidepanel.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,43 @@
+{
+  "manifest_version": 3,
+  "name": "Aviator Tracker Pro",
+  "version": "1.1.0",
+  "description": "Análisis profesional de multiplicadores para Aviator con Sniper Trigger y Estrategias",
+  "permissions": [
+    "storage",
+    "activeTab",
+    "sidePanel",
+    "scripting",
+    "unlimitedStorage"
+  ],
+  "action": {
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_idle",
+      "all_frames": true
+    }
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

@@ -1,0 +1,161 @@
+<!-- INSERTAR ESTE CÓDIGO DESPUÉS DE LA SECCIÓN "Control Automático" (línea 264) -->
+<!-- Y ANTES DE LA SECCIÓN "Historial y Acción" (línea 266) -->
+
+    <!-- Estrategias de Apuestas Profesionales -->
+    <div class="side-section">
+        <h3 style="cursor: pointer; user-select: none;" id="strategiesToggle">
+            🎲 Estrategias de Apuestas <span id="strategiesArrow">▶</span>
+        </h3>
+        <div id="strategiesContent" style="display: none;">
+            <select id="strategySelector" class="strategy-select">
+                <option value="none">Ninguna (Manual)</option>
+                <option value="martingale">Martingala Clásica</option>
+                <option value="anti_martingale">Anti-Martingala (Paroli)</option>
+                <option value="fibonacci">Fibonacci</option>
+                <option value="dalembert">D'Alembert</option>
+                <option value="conservative">Conservadora (1.2x-2.0x)</option>
+                <option value="high_risk">Alto Riesgo</option>
+                <option value="dual">Dual (Cobertura)</option>
+            </select>
+
+            <!-- Martingala Clásica -->
+            <div id="strategy_martingale" class="strategy-config" style="display: none;">
+                <div class="strategy-info">Duplica la apuesta tras cada pérdida hasta recuperar</div>
+                <div class="strategy-param">
+                    <label>Apuesta Base (ARS):</label>
+                    <input type="number" id="mg_base" min="10" max="10000" step="10" value="100">
+                </div>
+                <div class="strategy-param">
+                    <label>Objetivo (X):</label>
+                    <input type="number" id="mg_target" min="1.00" max="29.99" step="0.01" value="2.00">
+                </div>
+                <div class="strategy-param">
+                    <label>Máx Duplicaciones:</label>
+                    <input type="number" id="mg_maxDoubles" min="1" max="10" step="1" value="5">
+                </div>
+            </div>
+
+            <!-- Anti-Martingala -->
+            <div id="strategy_anti_martingale" class="strategy-config" style="display: none;">
+                <div class="strategy-info">Duplica la apuesta tras cada victoria</div>
+                <div class="strategy-param">
+                    <label>Apuesta Base (ARS):</label>
+                    <input type="number" id="am_base" min="10" max="10000" step="10" value="100">
+                </div>
+                <div class="strategy-param">
+                    <label>Objetivo (X):</label>
+                    <input type="number" id="am_target" min="1.00" max="29.99" step="0.01" value="2.00">
+                </div>
+                <div class="strategy-param">
+                    <label>Victorias antes de reset:</label>
+                    <input type="number" id="am_maxWins" min="1" max="5" step="1" value="3">
+                </div>
+            </div>
+
+            <!-- Fibonacci -->
+            <div id="strategy_fibonacci" class="strategy-config" style="display: none;">
+                <div class="strategy-info">Secuencia: 1, 1, 2, 3, 5, 8, 13, 21...</div>
+                <div class="strategy-param">
+                    <label>Apuesta Base (ARS):</label>
+                    <input type="number" id="fib_base" min="10" max="10000" step="10" value="100">
+                </div>
+                <div class="strategy-param">
+                    <label>Objetivo (X):</label>
+                    <input type="number" id="fib_target" min="1.00" max="29.99" step="0.01" value="2.00">
+                </div>
+                <div class="strategy-param">
+                    <label>Posición Máxima:</label>
+                    <input type="number" id="fib_maxPos" min="1" max="12" step="1" value="8">
+                </div>
+            </div>
+
+            <!-- D'Alembert -->
+            <div id="strategy_dalembert" class="strategy-config" style="display: none;">
+                <div class="strategy-info">Incremento lineal por pérdida, decremento por victoria</div>
+                <div class="strategy-param">
+                    <label>Apuesta Base (ARS):</label>
+                    <input type="number" id="da_base" min="10" max="10000" step="10" value="100">
+                </div>
+                <div class="strategy-param">
+                    <label>Incremento (ARS):</label>
+                    <input type="number" id="da_increment" min="10" max="1000" step="10" value="50">
+                </div>
+                <div class="strategy-param">
+                    <label>Objetivo (X):</label>
+                    <input type="number" id="da_target" min="1.00" max="29.99" step="0.01" value="2.00">
+                </div>
+                <div class="strategy-param">
+                    <label>Apuesta Mínima (ARS):</label>
+                    <input type="number" id="da_min" min="10" max="1000" step="10" value="50">
+                </div>
+            </div>
+
+            <!-- Conservadora -->
+            <div id="strategy_conservative" class="strategy-config" style="display: none;">
+                <div class="strategy-info">Apuestas fijas en multiplicadores bajos y seguros</div>
+                <div class="strategy-param">
+                    <label>Apuesta Fija (ARS):</label>
+                    <input type="number" id="cons_bet" min="10" max="10000" step="10" value="200">
+                </div>
+                <div class="strategy-param">
+                    <label>Objetivo Primario (X):</label>
+                    <input type="number" id="cons_target1" min="1.10" max="2.50" step="0.01" value="1.50">
+                </div>
+                <div class="strategy-param">
+                    <label>Objetivo Secundario (X):</label>
+                    <input type="number" id="cons_target2" min="1.10" max="2.50" step="0.01" value="2.00">
+                </div>
+                <div class="strategy-param">
+                    <label>Alternar objetivos:</label>
+                    <input type="checkbox" id="cons_alternate" checked>
+                </div>
+            </div>
+
+            <!-- Alto Riesgo -->
+            <div id="strategy_high_risk" class="strategy-config" style="display: none;">
+                <div class="strategy-info">Apuestas en multiplicadores altos con gestión de riesgo</div>
+                <div class="strategy-param">
+                    <label>Bankroll Total (ARS):</label>
+                    <input type="number" id="hr_bankroll" min="1000" max="100000" step="100" value="5000">
+                </div>
+                <div class="strategy-param">
+                    <label>% por Apuesta:</label>
+                    <input type="number" id="hr_percent" min="1" max="20" step="1" value="5">
+                </div>
+                <div class="strategy-param">
+                    <label>Objetivo (X):</label>
+                    <input type="number" id="hr_target" min="5.00" max="29.99" step="0.01" value="10.00">
+                </div>
+                <div class="strategy-param">
+                    <label>Stop Loss (% bankroll):</label>
+                    <input type="number" id="hr_stopLoss" min="10" max="50" step="5" value="30">
+                </div>
+            </div>
+
+            <!-- Dual (Cobertura) -->
+            <div id="strategy_dual" class="strategy-config" style="display: none;">
+                <div class="strategy-info">Dos apuestas simultáneas: una segura, una arriesgada</div>
+                <div class="strategy-param">
+                    <label>Apuesta Segura (ARS):</label>
+                    <input type="number" id="dual_bet1" min="10" max="10000" step="10" value="150">
+                </div>
+                <div class="strategy-param">
+                    <label>Objetivo Seguro (X):</label>
+                    <input type="number" id="dual_target1" min="1.00" max="3.00" step="0.01" value="1.50">
+                </div>
+                <div class="strategy-param">
+                    <label>Apuesta Arriesgada (ARS):</label>
+                    <input type="number" id="dual_bet2" min="10" max="10000" step="10" value="50">
+                </div>
+                <div class="strategy-param">
+                    <label>Objetivo Arriesgado (X):</label>
+                    <input type="number" id="dual_target2" min="3.00" max="29.99" step="0.01" value="8.00">
+                </div>
+            </div>
+
+            <button id="activateStrategyBtn" class="btn-full btn-primary" style="margin-top: 10px;">
+                Activar Estrategia
+            </button>
+            <div id="strategyStatus" style="font-size: 10px; text-align: center; margin-top: 5px; opacity: 0.7;"></div>
+        </div>
+    </div>
